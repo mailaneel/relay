@@ -1,8 +1,7 @@
 #Usage
 
 
-```
-#!js
+```js
 //es6
 import Relay from 'realy';
 
@@ -33,23 +32,22 @@ var relay = Relay.fromSchema(schema, config);
 
 Relay extends from EventEmitter, so you can use nodes event api to listen for events
 
-* beforeRequest -> here requests can be modified
-* request -> take this as a opportunity to abort requests if needed 
+* beforeRequest: here requests can be modified
+* request: take this as a opportunity to abort requests if needed 
 * response 
 * error
-* requestsFinish -> this is fired when there are 0 pending requests
+* requestsFinish: this is fired when there are 0 pending requests
 
 
-```
-#!js
+```js
 
 /*
 options = {
- resourceName: 'comments',
- methodName: 'get',
- path: '/comments',
- parse: [] // or function or what ever passed in schema
-} 
+    resourceName: 'comments',
+    methodName: 'get',
+    path: '/comments',
+    parse: [] // or function or what ever passed in schema
+   } 
 */
 relay.on('beforeRequest', function(options, request){
 
@@ -79,8 +77,7 @@ relay.on('requestsFinish', function(){
 Api methods returns promises, you can also pass node style callback. Methods are available as lower cased + concatenated(resouceName_methodName) 
 
 
-```
-#!js
+```js
 
 //with out data 1
 var promise = relay.api.comments_get();
