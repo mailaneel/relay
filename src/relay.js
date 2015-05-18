@@ -223,28 +223,28 @@ export default class Relay extends EventEmitter {
          *  false as first or second parameter to method will return request for modification, it allows us to modify request.
          *  When ready to send request call end()  with or without callback.. end() will always return promise
          *
-         *  var request = relay.api.comments_get({count:1}, false);
+         *  var request = api.comments_get({count:1}, false);
          *  request.query({session_id: 1234});
          *  var promise = request.end();
          *  promise.then(function(res){});
          *
          *  if there is no need to modify request
          *
-         *  var promise = relay.api.comments_get({count:1});
+         *  var promise = api.comments_get({count:1});
          *  promise.then(function(res){});
          *
          *  or if there are no query params
          *
-         *  var promise = relay.api.comments_get();
+         *  var promise = api.comments_get();
          *  promise.then(function(res){});
          *
          *  or if you like node like callbacks
          *
-         *  relay.api.comments_get({count:1}, function(err, res){});
+         *  api.comments_get({count:1}, function(err, res){});
          *
          *  or
          *
-         *  relay.api.comments_get({count:1}, false).end(function(err, res){});
+         *  api.comments_get({count:1}, false).end(function(err, res){});
          *
          * data is optional, so you can pass callback or false as first parameter as well if needed.
          * @param {object|boolean|function} [data] data to sent to server
