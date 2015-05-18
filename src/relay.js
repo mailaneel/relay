@@ -99,7 +99,7 @@ export default class Relay extends EventEmitter {
             _.each(methods, function (methodConfig, methodName) {
                 methodConfig.resourceName = resourceName;
                 methodConfig.methodName = methodName;
-                relay.addMethod(methodConfig);
+                relay._addMethod(methodConfig);
             });
         });
 
@@ -109,7 +109,6 @@ export default class Relay extends EventEmitter {
     constructor(config = {}) {
         super();
         this.config = _.defaults(config, {apiUrl: ''});
-        this.api = {};
         this._requestsInProgress = 0;
         this._bindToEvents();
     }
@@ -167,7 +166,7 @@ export default class Relay extends EventEmitter {
      * @param {string} options.path ex: '/comments' or '/comments/{id}, 'comments/create'
      * @param {array} [options.parse]
      */
-    addMethod(options) {
+    _addMethod(options) {
         options = options || {};
 
         if (!options.resourceName) {
@@ -196,8 +195,8 @@ export default class Relay extends EventEmitter {
             options.method = 'GET';
         }
 
-        this.api[options.resourceName] = this.api[options.resourceName] || {};
-        this.api[options.resourceName][options.methodName] = this.api[options.name] = this._generateRequestMethod(_.clone(options));
+        this[options.resourceName] = this[options.resourceName] || {};
+        this[options.resourceName][options.methodName] = this[options.name] = this._generateRequestMethod(_.clone(options));
 
         return this;
     }

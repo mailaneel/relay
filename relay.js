@@ -138,7 +138,6 @@ var Relay = (function (_EventEmitter) {
 
         _get(Object.getPrototypeOf(Relay.prototype), 'constructor', this).call(this);
         this.config = _underscore2['default'].defaults(config, { apiUrl: '' });
-        this.api = {};
         this._requestsInProgress = 0;
         this._bindToEvents();
     }
@@ -188,7 +187,7 @@ var Relay = (function (_EventEmitter) {
             });
         }
     }, {
-        key: 'addMethod',
+        key: '_addMethod',
 
         /**
          *
@@ -200,7 +199,7 @@ var Relay = (function (_EventEmitter) {
          * @param {string} options.path ex: '/comments' or '/comments/{id}, 'comments/create'
          * @param {array} [options.parse]
          */
-        value: function addMethod(options) {
+        value: function _addMethod(options) {
             options = options || {};
 
             if (!options.resourceName) {
@@ -229,8 +228,8 @@ var Relay = (function (_EventEmitter) {
                 options.method = 'GET';
             }
 
-            this.api[options.resourceName] = this.api[options.resourceName] || {};
-            this.api[options.resourceName][options.methodName] = this.api[options.name] = this._generateRequestMethod(_underscore2['default'].clone(options));
+            this[options.resourceName] = this[options.resourceName] || {};
+            this[options.resourceName][options.methodName] = this[options.name] = this._generateRequestMethod(_underscore2['default'].clone(options));
 
             return this;
         }
@@ -375,7 +374,7 @@ var Relay = (function (_EventEmitter) {
                 _underscore2['default'].each(methods, function (methodConfig, methodName) {
                     methodConfig.resourceName = resourceName;
                     methodConfig.methodName = methodName;
-                    relay.addMethod(methodConfig);
+                    relay._addMethod(methodConfig);
                 });
             });
 

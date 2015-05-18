@@ -34,27 +34,27 @@ describe('Relay', function () {
 
     describe('#fromSchema', function () {
         it('should create api #fromSchema', function () {
-            var relay = Relay.fromSchema(schema, config);
-            assert.instanceOf(relay, Relay);
-            assert.isDefined(relay.api.comments);
-            assert.isFunction(relay.api.comments.get);
-            assert.isFunction(relay.api.comments_get);
+            var api = Relay.fromSchema(schema, config);
+            assert.instanceOf(api, Relay);
+            assert.isDefined(api.comments);
+            assert.isFunction(api.comments.get);
+            assert.isFunction(api.comments_get);
         });
     });
 
-    describe('#addMethod', function () {
+    describe('#_addMethod', function () {
 
         it('should throw if missing required params', function () {
-            var relay = new Relay(config);
-            assert.throw(relay.addMethod, Error);
+            var api = new Relay(config);
+            assert.throw(api._addMethod, Error);
         });
 
         it('should add method to api using', function () {
-            var relay = new Relay(config);
-            relay.addMethod(getMethod());
-            assert.isDefined(relay.api.comments);
-            assert.isFunction(relay.api.comments.get);
-            assert.isFunction(relay.api.comments_get);
+            var api = new Relay(config);
+            api._addMethod(getMethod());
+            assert.isDefined(api.comments);
+            assert.isFunction(api.comments.get);
+            assert.isFunction(api.comments_get);
         });
     });
 
@@ -76,31 +76,31 @@ describe('Relay', function () {
         });
 
         it('should return Request type when false is passed as first or second parameter', function(){
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            assert.instanceOf(relay.api.comments_get(false), request.Request);
-            assert.instanceOf(relay.api.comments_get({}, false), request.Request);
+            assert.instanceOf(api.comments_get(false), request.Request);
+            assert.instanceOf(api.comments_get({}, false), request.Request);
         });
 
         it('should return a Promise when no parameters or just data is given as first parameter', function(){
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            assert.instanceOf(relay.api.comments_get(), Promise);
-            assert.instanceOf(relay.api.comments_get({}), Promise);
+            assert.instanceOf(api.comments_get(), Promise);
+            assert.instanceOf(api.comments_get({}), Promise);
 
         });
 
-        it('should send request when api method with out parameters and return promise', function (done) {
+        it('should send request when api method is called with out parameters and return promise', function (done) {
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.api.comments_get().then(function (res) {
+            api.comments_get().then(function (res) {
                 assert.equal(res.body[0].comment, 'This is test comment');
                 done();
             });
@@ -108,11 +108,11 @@ describe('Relay', function () {
         });
 
         it('should not send request when sendRequest is false, return Request to modify headers or any thing required', function (done) {
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            var req = relay.api.comments_get(false);
+            var req = api.comments_get(false);
             req.end().then(function (res) {
                 assert.equal(res.body[0].comment, 'This is test comment');
                 done();
@@ -121,12 +121,12 @@ describe('Relay', function () {
         });
 
         it('should call parse if exist in method options and return data from parse', function (done) {
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
             method.parse = sinon.stub().returns([{id: 1, comment: 'This is parsed comment'}]);
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.api.comments_get().then(function (res) {
+            api.comments_get().then(function (res) {
                 assert(method.parse.called);
                 assert.equal(res.body[0].comment, 'This is parsed comment');
                 done();
@@ -134,14 +134,14 @@ describe('Relay', function () {
         });
 
         it('should call array of parses if exist and return data from parse', function (done) {
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
             var parse1 = sinon.stub().returns([{id: 1, comment: 'This is parsed1 comment'}]);
             var parse2 = sinon.stub().returns([{id: 1, comment: 'This is parsed2 comment'}]);
             method.parse = [parse1, parse2];
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.api.comments_get().then(function (res) {
+            api.comments_get().then(function (res) {
                 assert(parse1.called);
                 assert(parse2.called);
                 assert.equal(res.body[0].comment, 'This is parsed2 comment');
@@ -160,17 +160,17 @@ describe('Relay', function () {
                     comment: 'This is test comment'
                 }]);
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.on('beforeRequest', function (options, req) {
+            api.on('beforeRequest', function (options, req) {
                 //this can be used to set timeout or modify properties of a request
                 req.timeout(1000);
                 done()
             });
 
-            assert.instanceOf(relay.api.comments_get(), Promise);
+            assert.instanceOf(api.comments_get(), Promise);
             nock.cleanAll();
         });
     });
@@ -184,15 +184,15 @@ describe('Relay', function () {
                     comment: 'This is test comment'
                 }]);
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.on('request', function () {
+            api.on('request', function () {
                 done()
             });
 
-            assert.instanceOf(relay.api.comments_get(), Promise);
+            assert.instanceOf(api.comments_get(), Promise);
             nock.cleanAll();
         });
     });
@@ -206,15 +206,15 @@ describe('Relay', function () {
                     comment: 'This is test comment'
                 }]);
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.on('response', function () {
+            api.on('response', function () {
                 done()
             });
 
-            relay.api.comments_get();
+            api.comments_get();
             nock.cleanAll();
         });
     });
@@ -226,15 +226,15 @@ describe('Relay', function () {
                 .get('/comments')
                 .reply(404, 'some error');
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.on('error', function () {
+            api.on('error', function () {
                 done()
             });
 
-            relay.api.comments_get();
+            api.comments_get();
             nock.cleanAll();
         });
     });
@@ -249,17 +249,17 @@ describe('Relay', function () {
                     comment: 'This is test comment'
                 }]);
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.on('requestsFinish', function () {
-                assert.equal(0, relay._requestsInProgress);
+            api.on('requestsFinish', function () {
+                assert.equal(0, api._requestsInProgress);
                 done()
             });
 
-            relay.api.comments_get();
-            assert.equal(1, relay._requestsInProgress);
+            api.comments_get();
+            assert.equal(1, api._requestsInProgress);
 
             nock.cleanAll();
         });
@@ -272,21 +272,21 @@ describe('Relay', function () {
                     comment: 'This is test comment'
                 }]);
 
-            var relay = new Relay(config);
+            var api = new Relay(config);
             var method = getMethod();
-            relay.addMethod(method);
+            api._addMethod(method);
 
-            relay.on('requestsFinish', function () {
-                assert.equal(0, relay._requestsInProgress);
+            api.on('requestsFinish', function () {
+                assert.equal(0, api._requestsInProgress);
                 done()
             });
 
-            relay.on('request', function(options, request){
-                assert.equal(1, relay._requestsInProgress);
+            api.on('request', function(options, request){
+                assert.equal(1, api._requestsInProgress);
                 request.abort();
             });
 
-            relay.api.comments_get();
+            api.comments_get();
             nock.cleanAll();
         });
     });

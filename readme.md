@@ -3,7 +3,7 @@
 
 ```js
 //es6
-import Relay from 'realy';
+import Relay from 'relay';
 
 var schema = {
    comments: {
@@ -24,7 +24,7 @@ var config = {
    apiUrl: 'http://test.com'
 }
 
-var relay = Relay.fromSchema(schema, config);
+var api = Relay.fromSchema(schema, config);
 
 ```
 
@@ -49,23 +49,23 @@ options = {
     parse: [] // or function or what ever passed in schema
    } 
 */
-relay.on('beforeRequest', function(options, request){
+api.on('beforeRequest', function(options, request){
 
 });
 
-relay.on('request', function(options, request){
+api.on('request', function(options, request){
 
 });
 
-relay.on('response', function(options, request, response){
+api.on('response', function(options, request, response){
 
 });
 
-relay.on('error', function(options, request, response, error){
+api.on('error', function(options, request, response, error){
 
 });
 
-relay.on('requestsFinish', function(){
+api.on('requestsFinish', function(){
 
 });
 
@@ -80,14 +80,14 @@ Api methods returns promises, you can also pass node style callback. Methods are
 ```js
 
 //with out data 1
-var promise = relay.api.comments_get();
+var promise = api.comments_get();
 
 //or callback
-relay.api.comments_get(function(err, res){
+api.comments_get(function(err, res){
 }); 
 
 //with out data 2
-var request = relay.api.comments_get(false);
+var request = api.comments_get(false);
 var promise = request.end(); // similar to superagent's api
 
 //or callback
@@ -96,14 +96,14 @@ request.end(function(err, res){
 
 
 //with data 1
-var promise = relay.api.comments_get({count:3});
+var promise = api.comments_get({count:3});
 
 //or callback
-relay.api.comments_get({count:3},function(err, res){
+api.comments_get({count:3},function(err, res){
 });
 
 //with data 2
-var request = realy.api.comments_get({count:3}, false);
+var request = api.comments_get({count:3}, false);
 var promise = request.end(); // similar to superagent's api
 
 //or callback
