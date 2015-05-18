@@ -4,6 +4,7 @@ var sinon = require('sinon');
 var assert = require('chai').assert;
 var request = require('superagent');
 
+
 var schema = {
     comments: {
         get: {
@@ -15,6 +16,7 @@ var schema = {
 var config = {
     apiUrl: 'http://test.com'
 };
+
 
 function getMethod() {
     return {resourceName: 'comments', methodName: 'get', path: '/comments'}
@@ -55,6 +57,19 @@ describe('Relay', function () {
             assert.isDefined(api.comments);
             assert.isFunction(api.comments.get);
             assert.isFunction(api.comments_get);
+        });
+    });
+
+
+    describe('#_toURL', function () {
+
+
+        it('should replace url named params and return full path', function () {
+            var api = new Relay(config);
+            var data = {id: 1};
+            var fullUrl = api._toURL('/:id', data);
+            assert.equal(fullUrl, 'http://test.com/1');
+            assert.isUndefined(data['id']);
         });
     });
 

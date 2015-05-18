@@ -236,14 +236,26 @@ var Relay = (function (_EventEmitter) {
     }, {
         key: '_toURL',
         value: function _toURL(path, params) {
-            _underscore2['default'].each(params, function (key, val) {
+
+            if (!_underscore2['default'].isObject(params)) {
+                params = {};
+            }
+
+            var matches = path.split('/:');
+            _underscore2['default'].each(params, function (val, key) {
                 path = path.replace('/:' + key, '/' + val);
             });
 
-            path = path.replace(/\/:.*\?/g, '/').replace(/\?/g, '');
+            _underscore2['default'].each(matches, function (val) {
+                if (_underscore2['default'].indexOf(_underscore2['default'].keys(params), val) !== -1) {
+                    delete params[val];
+                }
+            });
+
             if (path.indexOf(':') != -1) {
                 throw new Error('missing parameters for url: ' + path);
             }
+
             return this.config.apiUrl + path;
         }
     }, {

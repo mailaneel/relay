@@ -2,7 +2,6 @@ import request from 'superagent';
 import _ from 'underscore';
 import EventEmitter from 'eventemitter3';
 
-
 class ParseAwareRequest extends request.Request {
 
     addParsers(parsers) {
@@ -202,14 +201,26 @@ export default class Relay extends EventEmitter {
     }
 
     _toURL(path, params) {
-        _.each(params, function (key, val) {
+
+        if(!_.isObject(params)){
+            params = {};
+        }
+
+        var matches = path.split('/:');
+        _.each(params, function (val, key) {
             path = path.replace('/:' + key, '/' + val);
         });
 
-        path = path.replace(/\/:.*\?/g, '/').replace(/\?/g, '');
+        _.each(matches, function(val){
+            if(_.indexOf(_.keys(params), val) !== -1){
+                delete params[val];
+            }
+        });
+
         if (path.indexOf(':') != -1) {
             throw new Error('missing parameters for url: ' + path);
         }
+
         return this.config.apiUrl + path;
     }
 
