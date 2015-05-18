@@ -259,6 +259,17 @@ var Relay = (function (_EventEmitter) {
             return this.config.apiUrl + path;
         }
     }, {
+        key: '_sanitizeQueryParams',
+        value: function _sanitizeQueryParams(params) {
+            _underscore2['default'].each(params, function (val, key) {
+                if (_underscore2['default'].isEmpty(val) && !_underscore2['default'].isNumber(val)) {
+                    delete params[key];
+                }
+            });
+
+            return params;
+        }
+    }, {
         key: '_generateRequestMethod',
         value: function _generateRequestMethod(options) {
 
@@ -317,6 +328,7 @@ var Relay = (function (_EventEmitter) {
                         case 'get':
                         case 'head':
                         case 'delete':
+                            relay._sanitizeQueryParams(data);
                             _request.query(data);
                             break;
                         case 'post':

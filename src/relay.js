@@ -202,7 +202,7 @@ export default class Relay extends EventEmitter {
 
     _toURL(path, params) {
 
-        if(!_.isObject(params)){
+        if (!_.isObject(params)) {
             params = {};
         }
 
@@ -211,8 +211,8 @@ export default class Relay extends EventEmitter {
             path = path.replace('/:' + key, '/' + val);
         });
 
-        _.each(matches, function(val){
-            if(_.indexOf(_.keys(params), val) !== -1){
+        _.each(matches, function (val) {
+            if (_.indexOf(_.keys(params), val) !== -1) {
                 delete params[val];
             }
         });
@@ -222,6 +222,16 @@ export default class Relay extends EventEmitter {
         }
 
         return this.config.apiUrl + path;
+    }
+
+    _sanitizeQueryParams(params) {
+        _.each(params, function (val, key) {
+            if (_.isEmpty(val) && !_.isNumber(val)) {
+                delete params[key];
+            }
+        });
+
+        return params;
     }
 
     _generateRequestMethod(options) {
@@ -262,14 +272,14 @@ export default class Relay extends EventEmitter {
          * @param {boolean|function} [sendRequest=true]
          */
         return function (data = {}, sendRequest = true) {
-
+            
             if (arguments.length == 1 && (_.isBoolean(data) || _.isFunction(data))) {
                 sendRequest = data;
                 data = {};
             }
 
             var callEnd = (sendRequest !== false);
-            var cb = (_.isFunction(sendRequest))? sendRequest: null;
+            var cb = (_.isFunction(sendRequest)) ? sendRequest : null;
 
             var _request = new PromiseAwareRequest(options.method, relay._toURL(options.path, (data || {})));
             _request.addParsers(options.parse);
@@ -279,6 +289,7 @@ export default class Relay extends EventEmitter {
                     case 'get':
                     case 'head':
                     case 'delete':
+                        relay._sanitizeQueryParams(data);
                         _request.query(data);
                         break;
                     case 'post':
