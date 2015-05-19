@@ -1,4 +1,4 @@
-var Relay = require('../relay');
+var Relay = require('../index');
 var nock = require('nock');
 var sinon = require('sinon');
 var assert = require('chai').assert;

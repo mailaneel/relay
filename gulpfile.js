@@ -6,7 +6,7 @@ gulp.task('default', function () {
 });
 
 gulp.task('build', function(){
-    return gulp.src('./src/relay.js')
+    return gulp.src('./src/**.js')
         .pipe(babel({optional:'runtime'}))
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./lib/'));
 });
