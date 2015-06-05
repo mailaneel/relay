@@ -83,7 +83,7 @@ Api methods returns promises, you can also pass node style callback. Methods are
 var promise = api.comments_get();
 
 //or callback
-api.comments_get(function(err, res){
+api.comments_get(function(err, comments, res){
 }); 
 
 //with out data 2
@@ -91,15 +91,15 @@ var request = api.comments_get(false);
 var promise = request.end(); // similar to superagent's api
 
 //or callback
-request.end(function(err, res){
+request.end(function(err, comments, res){
 });
 
 
 //with data 1
-var promise = api.comments_get({count:3});
+var promise = api.comments_get({count:3}).then(function(comments, res){});
 
 //or callback
-api.comments_get({count:3},function(err, res){
+api.comments_get({count:3},function(err, comments, res){
 });
 
 //with data 2
@@ -107,7 +107,7 @@ var request = api.comments_get({count:3}, false);
 var promise = request.end(); // similar to superagent's api
 
 //or callback
-request.end(function(err, res){
+request.end(function(err, comments, res){
 });
 
 ```

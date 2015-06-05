@@ -35,12 +35,15 @@ class ParseAwareRequest extends request.Request {
     end(cb) {
         cb = cb || _.noop;
         var parsers = this.getParsers();
+        // this wrapper will execute first before any other end wrappers
         return super.end(function (err, res) {
             if (!err && res.ok) {
+
                 // call parse handlers
                 _.each(parsers, function (parser) {
                     res.body = parser(res.body);
                 });
+
             }
 
             cb.apply(null, [err, res]);
@@ -60,7 +63,7 @@ class PromiseAwareRequest extends ParseAwareRequest {
                 if (err) {
                     reject(err, res);
                 } else {
-                    resolve(res);
+                    resolve(res.body, res);
                 }
 
                 cb.apply(null, [err, res]);
@@ -318,7 +321,8 @@ export default class Relay extends EventEmitter {
                         relay.emit('response', options, _request, res);
                     }
 
-                    cb.apply(null, [err, res]);
+                    // final callback from relay will have 3 arguments
+                    cb.apply(null, [err, res.body, res]);
                 });
             });
 
