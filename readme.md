@@ -24,7 +24,7 @@ var config = {
    apiUrl: 'http://test.com'
 }
 
-var api = Relay.fromSchema(schema, config);
+var api = Relay.fromSchema(schema, config).api();
 
 ```
 

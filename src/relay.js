@@ -112,7 +112,36 @@ export default class Relay extends EventEmitter {
         super();
         this.config = _.defaults(config, {apiUrl: ''});
         this._requestsInProgress = 0;
+
+        // this can be used as extension point to add cache wrapper etc.,
+        this._api = {};
+
         this._bindToEvents();
+    }
+
+    /**
+     * if no params are given will return api object
+     *
+     * @param {string} [resource] can be resource or name of method i.e resource_method
+     * @param {string} [method]
+     */
+    api(resource, method) {
+        if (resource && this._api[resource]) {
+            if (method && this._api[resource][method]) {
+                return this._api[resource][method];
+            }
+            return this._api[resource];
+        }
+
+        return this._api;
+    }
+
+    /**
+     * This can be used to extend relay or its api methods
+     * @param handler
+     */
+    use(handler){
+        handler.call(null, this);
     }
 
     _requestStarted() {
@@ -197,8 +226,9 @@ export default class Relay extends EventEmitter {
             options.method = 'GET';
         }
 
-        this[options.resourceName] = this[options.resourceName] || {};
-        this[options.resourceName][options.methodName] = this[options.name] = this._generateRequestMethod(_.clone(options));
+
+        this._api[options.resourceName] = this._api[options.resourceName] || {};
+        this._api[options.resourceName][options.methodName] = this._api[options.name] = this._generateRequestMethod(_.clone(options));
 
         return this;
     }
@@ -275,7 +305,7 @@ export default class Relay extends EventEmitter {
          * @param {boolean|function} [sendRequest=true]
          */
         return function (data = {}, sendRequest = true) {
-            
+
             if (arguments.length == 1 && (_.isBoolean(data) || _.isFunction(data))) {
                 sendRequest = data;
                 data = {};
