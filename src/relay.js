@@ -125,7 +125,7 @@ export default class Relay extends EventEmitter {
     }
 
     _bindToEvents() {
-        
+
         var self = this;
 
         this.on('beforeRequest', function () {
