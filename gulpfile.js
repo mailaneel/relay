@@ -7,6 +7,6 @@ gulp.task('default', ['build'], function () {
 
 gulp.task('build', function(){
     return gulp.src('./src/**.js')
-        .pipe(babel({optional:'runtime'}))
+        .pipe(babel({optional:'runtime', loose: 'all'}))
         .pipe(gulp.dest('./lib/'));
 });

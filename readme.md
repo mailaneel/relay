@@ -9,7 +9,7 @@ var schema = {
    comments: {
        get: {
          path: '/comments',
-         // parse is optional, function or array or functions
+         // parse is optional
          parse: function(res){
           return res.map(comment => comment + '!!')
          },
@@ -46,22 +46,22 @@ options = {
     resourceName: 'comments',
     methodName: 'get',
     path: '/comments',
-    parse: [] // or function or what ever passed in schema
+    parse: null 
    } 
 */
-api.on('beforeRequest', function(options, request){
+api.on('beforeRequest', function(request){
 
 });
 
-api.on('request', function(options, request){
+api.on('request', function(request){
 
 });
 
-api.on('response', function(options, request, response){
+api.on('response', function(request, response){
 
 });
 
-api.on('error', function(options, request, response, error){
+api.on('error', function(error, request, response){
 
 });
 

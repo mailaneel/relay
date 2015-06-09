@@ -1,79 +1,8 @@
-import request from 'superagent';
+import superagent from 'superagent';
 import _ from 'underscore';
 import EventEmitter from 'eventemitter3';
 
-class ParseAwareRequest extends request.Request {
-
-    addParsers(parsers) {
-        this._parseAwareParsers = this._parseAwareParsers || [];
-
-        var self = this;
-        if (parsers) {
-            if (_.isFunction(parsers)) {
-                self._parseAwareParsers.push(parsers);
-            }
-
-            if (_.isArray(parsers)) {
-                _.each(parsers, function (parser) {
-                    self._parseAwareParsers.push(parser);
-                });
-            }
-        }
-
-        return this;
-    }
-
-    getParsers() {
-        return this._parseAwareParsers || [];
-    }
-
-    /**
-     *
-     * @param cb
-     * @returns {*}
-     */
-    end(cb) {
-        cb = cb || _.noop;
-        var parsers = this.getParsers();
-        // this wrapper will execute first before any other end wrappers
-        return super.end(function (err, res) {
-            if (!err && res.ok) {
-
-                // call parse handlers
-                _.each(parsers, function (parser) {
-                    res.body = parser(res.body);
-                });
-
-            }
-
-            cb.apply(null, [err, res]);
-        });
-    }
-}
-
-
-// promise should be the last one
-// because promise will either resolve or reject by the time parsers are called
-class PromiseAwareRequest extends ParseAwareRequest {
-
-    end(cb) {
-        cb = cb || _.noop;
-        return new Promise(function (resolve, reject) {
-            super.end(function (err, res) {
-                if (err) {
-                    reject(err, res);
-                } else {
-                    resolve(res.body, res);
-                }
-
-                cb.apply(null, [err, res]);
-            });
-        });
-    }
-}
-
 export default class Relay extends EventEmitter {
-
 
     /**
      * Example Schema:
@@ -83,7 +12,7 @@ export default class Relay extends EventEmitter {
      *        'create' : {
      *           path: '/comments',
      *           method: 'POST', //optional defaults to GET
-     *           parse: [], optional array of callbacks or callback function signature: function(res){return res;}
+     *           parse: function(res){}, optional callback:  function signature: function(res){return res;}
      *        }
      *   }
      * }
@@ -106,6 +35,49 @@ export default class Relay extends EventEmitter {
         });
 
         return relay;
+    }
+
+    /**
+     * This should be used when you want to apply handler for all requests i.e by extending Request.prototype
+     * @param handler
+     */
+    static use(handler) {
+        handler.call(null, superagent);
+    }
+
+    static parser(request) {
+        request.end = _.wrap(request.end, function (wrappedEnd, cb) {
+            cb = cb || _.noop;
+            return wrappedEnd.call(request, function (err, res) {
+                if (!err && res.ok) {
+                    if (request.options.parse && _.isFunction(request.options.parse)) {
+                        res.body = request.options.parse(res.body);
+                    }
+                }
+
+                cb.apply(null, [err, res]);
+            });
+        });
+    }
+
+    static promisify(request) {
+        request.end = _.wrap(request.end, function (wrappedEnd, cb) {
+            cb = cb || _.noop;
+            return new Promise(function (resolve, reject) {
+                wrappedEnd.call(request, function (err, res) {
+                    if (err) {
+                        reject(err, res);
+                    } else {
+                        // only promises will send response.body
+                        // if you use callback you will get response instead of response.body
+                        // so that we do not break any one extending Relay
+                        resolve(res.body, res);
+                    }
+
+                    cb.apply(null, [err, res]);
+                });
+            });
+        });
     }
 
     constructor(config = {}) {
@@ -136,14 +108,6 @@ export default class Relay extends EventEmitter {
         return this._api;
     }
 
-    /**
-     * This can be used to extend relay or its api methods
-     * @param handler
-     */
-    use(handler){
-        handler.call(null, this);
-    }
-
     _requestStarted() {
         this._requestsInProgress++;
         return this
@@ -161,7 +125,7 @@ export default class Relay extends EventEmitter {
     }
 
     _bindToEvents() {
-
+        
         var self = this;
 
         this.on('beforeRequest', function () {
@@ -195,7 +159,7 @@ export default class Relay extends EventEmitter {
      * @param {string} options.methodName this is the method name ex: create
      * @param {string} [options.method=GET] this is request method ex: 'GET','PUT', 'POST' etc.,
      * @param {string} options.path ex: '/comments' or '/comments/{id}, 'comments/create'
-     * @param {array} [options.parse]
+     * @param {function} [options.parse]
      */
     _addMethod(options) {
         options = options || {};
@@ -314,8 +278,10 @@ export default class Relay extends EventEmitter {
             var callEnd = (sendRequest !== false);
             var cb = (_.isFunction(sendRequest)) ? sendRequest : null;
 
-            var _request = new PromiseAwareRequest(options.method, relay._toURL(options.path, (data || {})));
-            _request.addParsers(options.parse);
+            var request = new superagent.Request(options.method, relay._toURL(options.path, (data || {})));
+
+            // set request options so plugins can use
+            request.options = options;
 
             if (data) {
                 switch (options.method.toLowerCase()) {
@@ -323,46 +289,48 @@ export default class Relay extends EventEmitter {
                     case 'head':
                     case 'delete':
                         relay._sanitizeQueryParams(data);
-                        _request.query(data);
+                        request.query(data);
                         break;
                     case 'post':
                     case 'put':
-                        _request.send(data);
+                        request.send(data);
 
                 }
             }
 
-            _request.on('abort', function () {
-                relay.emit('abort', options, request);
+            request.on('abort', function () {
+                relay.emit('abort', request);
             });
 
-            _request.on('request', function () {
-                relay.emit('request', options, _request);
+            request.on('request', function () {
+                relay.emit('request', request);
             });
 
-            relay.emit('beforeRequest', options, _request);
+            relay.emit('beforeRequest', request);
 
-            _request.end = _.wrap(_request.end, function (wrappedEnd, cb) {
+            //add plugins
+            request.use(Relay.parser);
+            request.use(Relay.promisify);
+
+            request.end = _.wrap(request.end, function (wrappedEnd, cb) {
                 cb = cb || _.noop;
-                return wrappedEnd.call(_request, function (err, res) {
+                return wrappedEnd.call(request, function (err, res) {
                     if (err) {
-                        relay.emit('error', options, _request, res, err);
+                        relay.emit('error', err, request, res);
                     } else {
-                        relay.emit('response', options, _request, res);
+                        relay.emit('response', request, res);
                     }
 
-                    // final callback from relay will have 3 arguments
-                    cb.apply(null, [err, res.body, res]);
+                    cb.apply(null, [err, res]);
                 });
             });
 
             if (callEnd) {
-                return _request.end(cb);
+                return request.end(cb);
             }
 
             // return request so user can modify and call end when ready
-            return _request;
+            return request;
         };
     }
-
 }

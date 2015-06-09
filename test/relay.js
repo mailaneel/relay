@@ -2,7 +2,7 @@ var Relay = require('../index');
 var nock = require('nock');
 var sinon = require('sinon');
 var assert = require('chai').assert;
-var request = require('superagent');
+var superagent = require('superagent');
 
 
 var schema = {
@@ -84,14 +84,11 @@ describe('Relay', function () {
         });
     });
 
-    describe('#use', function(){
+    describe('#Relay.use', function(){
 
-        it('should call the handler with relay as param', function(done){
-            var relay = new Relay(config);
-
-            relay.use(function(_relay){
-                assert.equal(relay, _relay);
-                assert.instanceOf(_relay, Relay);
+        it('should call the handler with superagent as param', function(done){
+            Relay.use(function(agent){
+                assert.equal(superagent, agent);
                 done();
             });
 
@@ -120,8 +117,8 @@ describe('Relay', function () {
             var method = getMethod();
             relay._addMethod(method);
 
-            assert.instanceOf(relay.api().comments_get(false), request.Request);
-            assert.instanceOf(relay.api().comments_get({}, false), request.Request);
+            assert.instanceOf(relay.api().comments_get(false), superagent.Request);
+            assert.instanceOf(relay.api().comments_get({}, false), superagent.Request);
         });
 
         it('should return a Promise when no parameters or just data is given as first parameter', function(){
@@ -141,6 +138,7 @@ describe('Relay', function () {
             relay._addMethod(method);
 
             relay.api().comments_get().then(function (res) {
+                console.log(res)
                 assert.equal(res[0].comment, 'This is test comment');
                 done();
             });
@@ -172,22 +170,6 @@ describe('Relay', function () {
                 done();
             });
         });
-
-        it('should call array of parses if exist and return data from parse', function (done) {
-            var relay = new Relay(config);
-            var method = getMethod();
-            var parse1 = sinon.stub().returns([{id: 1, comment: 'This is parsed1 comment'}]);
-            var parse2 = sinon.stub().returns([{id: 1, comment: 'This is parsed2 comment'}]);
-            method.parse = [parse1, parse2];
-            relay._addMethod(method);
-
-            relay.api().comments_get().then(function (res) {
-                assert(parse1.called);
-                assert(parse2.called);
-                assert.equal(res[0].comment, 'This is parsed2 comment');
-                done();
-            });
-        });
     });
 
     describe('#event-beforeRequest', function () {
@@ -204,7 +186,7 @@ describe('Relay', function () {
             var method = getMethod();
             relay._addMethod(method);
 
-            relay.on('beforeRequest', function (options, req) {
+            relay.on('beforeRequest', function (req) {
                 //this can be used to set timeout or modify properties of a request
                 req.timeout(1000);
                 done()
@@ -321,7 +303,7 @@ describe('Relay', function () {
                 done()
             });
 
-            relay.on('request', function(options, request){
+            relay.on('request', function(request){
                 assert.equal(1, relay._requestsInProgress);
                 request.abort();
             });
