@@ -108,6 +108,10 @@ export default class Relay extends EventEmitter {
         return this._api;
     }
 
+    methods(resource, method){
+        return this.api(resource, method);
+    }
+
     _requestStarted() {
         this._requestsInProgress++;
         return this

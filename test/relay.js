@@ -84,6 +84,18 @@ describe('Relay', function () {
         });
     });
 
+    describe('#methods', function(){
+
+        it('alias to #api', function(){
+            var relay = Relay.fromSchema(schema, config);
+            assert.equal(relay._api, relay.methods());
+            assert.equal(relay._api['comments'], relay.methods('comments'));
+            assert.equal(relay._api['comments']['get'], relay.methods('comments', 'get'));
+            assert.equal(relay._api['comments_get'], relay.methods('comments', 'get'));
+            assert.equal(relay._api['comments_get'], relay.methods('comments_get'));
+        });
+    });
+
     describe('#Relay.use', function(){
 
         it('should call the handler with superagent as param', function(done){
