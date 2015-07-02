@@ -85,10 +85,17 @@ export default class Relay extends EventEmitter {
         this.config = _.defaults(config, {apiUrl: ''});
         this._requestsInProgress = 0;
 
+        this.middlewares = [Relay.parser, Relay.promisify];
+
         // this can be used as extension point to add cache wrapper etc.,
         this._api = {};
 
         this._bindToEvents();
+    }
+    
+    use(fn){
+       this.middlewares.push(fn);
+       return this;
     }
 
     /**
@@ -312,9 +319,10 @@ export default class Relay extends EventEmitter {
 
             relay.emit('beforeRequest', request);
 
-            //add plugins
-            request.use(Relay.parser);
-            request.use(Relay.promisify);
+            //add middlewares
+            _.each(relay.middlewares, function(middleware){
+               request.use(middleware); 
+            });
 
             request.end = _.wrap(request.end, function (wrappedEnd, cb) {
                 cb = cb || _.noop;
