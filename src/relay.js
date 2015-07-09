@@ -157,13 +157,9 @@ export default class Relay extends EventEmitter {
             throw new Error('resource name is required');
         }
 
-        options.resourceName = options.resourceName.toLowerCase();
-
         if (!options.methodName) {
             throw new Error('method name is required');
         }
-
-        options.methodName = options.methodName.toLocaleLowerCase();
 
         if (!options.path) {
             throw new Error('path is required');
