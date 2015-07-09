@@ -38,9 +38,8 @@ describe('Relay', function () {
         it('should create api #fromSchema', function () {
             var relay = Relay.fromSchema(schema, config);
             assert.instanceOf(relay, Relay);
-            assert.isDefined(relay.api().comments);
-            assert.isFunction(relay.api().comments.get);
-            assert.isFunction(relay.api().comments_get);
+            assert.isDefined(relay.api.comments);
+            assert.isFunction(relay.api.comments.get);
         });
     });
 
@@ -54,9 +53,8 @@ describe('Relay', function () {
         it('should add method to api using addMethod', function () {
             var relay = new Relay(config);
             relay._addMethod(getMethod());
-            assert.isDefined(relay.api().comments);
-            assert.isFunction(relay.api().comments.get);
-            assert.isFunction(relay.api().comments_get);
+            assert.isDefined(relay.api.comments);
+            assert.isFunction(relay.api.comments.get);
         });
     });
 
@@ -72,29 +70,6 @@ describe('Relay', function () {
         });
     });
 
-    describe('#api', function(){
-
-        it('should return api when no params are given', function(){
-            var relay = Relay.fromSchema(schema, config);
-            assert.equal(relay._api, relay.api());
-            assert.equal(relay._api['comments'], relay.api('comments'));
-            assert.equal(relay._api['comments']['get'], relay.api('comments', 'get'));
-            assert.equal(relay._api['comments_get'], relay.api('comments', 'get'));
-            assert.equal(relay._api['comments_get'], relay.api('comments_get'));
-        });
-    });
-
-    describe('#methods', function(){
-
-        it('alias to #api', function(){
-            var relay = Relay.fromSchema(schema, config);
-            assert.equal(relay._api, relay.methods());
-            assert.equal(relay._api['comments'], relay.methods('comments'));
-            assert.equal(relay._api['comments']['get'], relay.methods('comments', 'get'));
-            assert.equal(relay._api['comments_get'], relay.methods('comments', 'get'));
-            assert.equal(relay._api['comments_get'], relay.methods('comments_get'));
-        });
-    });
 
     describe('#Relay.use', function(){
 
@@ -129,8 +104,8 @@ describe('Relay', function () {
             var method = getMethod();
             relay._addMethod(method);
 
-            assert.instanceOf(relay.api().comments_get(false), superagent.Request);
-            assert.instanceOf(relay.api().comments_get({}, false), superagent.Request);
+            assert.instanceOf(relay.api.comments.get(false), superagent.Request);
+            assert.instanceOf(relay.api.comments.get({}, false), superagent.Request);
         });
 
         it('should return a Promise when no parameters or just data is given as first parameter', function(){
@@ -138,8 +113,8 @@ describe('Relay', function () {
             var method = getMethod();
             relay._addMethod(method);
 
-            assert.instanceOf(relay.api().comments_get(), Promise);
-            assert.instanceOf(relay.api().comments_get({}), Promise);
+            assert.instanceOf(relay.api.comments.get(), Promise);
+            assert.instanceOf(relay.api.comments.get({}), Promise);
 
         });
 
@@ -149,8 +124,7 @@ describe('Relay', function () {
             var method = getMethod();
             relay._addMethod(method);
 
-            relay.api().comments_get().then(function (res) {
-                console.log(res)
+            relay.api.comments.get().then(function (res) {
                 assert.equal(res[0].comment, 'This is test comment');
                 done();
             });
@@ -162,7 +136,7 @@ describe('Relay', function () {
             var method = getMethod();
             relay._addMethod(method);
 
-            var req = relay.api().comments_get(false);
+            var req = relay.api.comments.get(false);
             req.end().then(function (res) {
                 assert.equal(res[0].comment, 'This is test comment');
                 done();
@@ -176,7 +150,7 @@ describe('Relay', function () {
             method.parse = sinon.stub().returns([{id: 1, comment: 'This is parsed comment'}]);
             relay._addMethod(method);
 
-            relay.api().comments_get().then(function (res) {
+            relay.api.comments.get().then(function (res) {
                 assert(method.parse.called);
                 assert.equal(res[0].comment, 'This is parsed comment');
                 done();
@@ -204,7 +178,7 @@ describe('Relay', function () {
                 done()
             });
 
-            assert.instanceOf(relay.api().comments_get(), Promise);
+            assert.instanceOf(relay.api.comments.get(), Promise);
             nock.cleanAll();
         });
     });
@@ -226,7 +200,7 @@ describe('Relay', function () {
                 done()
             });
 
-            assert.instanceOf(relay.api().comments_get(), Promise);
+            assert.instanceOf(relay.api.comments.get(), Promise);
             nock.cleanAll();
         });
     });
@@ -248,7 +222,7 @@ describe('Relay', function () {
                 done()
             });
 
-            relay.api().comments_get();
+            relay.api.comments.get();
             nock.cleanAll();
         });
     });
@@ -268,7 +242,7 @@ describe('Relay', function () {
                 done()
             });
 
-            relay.api().comments_get();
+            relay.api.comments.get();
             nock.cleanAll();
         });
     });
@@ -292,7 +266,7 @@ describe('Relay', function () {
                 done()
             });
 
-            relay.api().comments_get();
+            relay.api.comments.get();
             assert.equal(1, relay._requestsInProgress);
 
             nock.cleanAll();
@@ -320,7 +294,7 @@ describe('Relay', function () {
                 request.abort();
             });
 
-            relay.api().comments_get();
+            relay.api.comments.get();
             nock.cleanAll();
         });
     });

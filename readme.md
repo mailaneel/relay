@@ -24,7 +24,30 @@ var config = {
    apiUrl: 'http://test.com'
 }
 
-var api = Relay.fromSchema(schema, config).api();
+var relay = Relay.fromSchema(schema, config);
+var api = relay.api;
+
+```
+
+#Plugins
+
+```js
+
+//handler function is called once
+//superagent level
+Relay.use(function(superagent){
+
+});
+
+
+//or after creating relay instance
+// handler function is called for each request
+// 
+relay.use(function(request){
+  //set accept header
+  request.accept('json')
+});
+
 
 ```
 
@@ -49,23 +72,23 @@ options = {
     parse: null 
    } 
 */
-api.on('beforeRequest', function(request){
+relay.on('beforeRequest', function(request){
 
 });
 
-api.on('request', function(request){
+relay.on('request', function(request){
 
 });
 
-api.on('response', function(request, response){
+relay.on('response', function(request, response){
 
 });
 
-api.on('error', function(error, request, response){
+relay.on('error', function(error, request, response){
 
 });
 
-api.on('requestsFinish', function(){
+relay.on('requestsFinish', function(){
 
 });
 
@@ -80,14 +103,14 @@ Api methods returns promises, you can also pass node style callback. Methods are
 ```js
 
 //with out data 1
-var promise = api.comments_get();
+var promise = api.comments.get();
 
 //or callback
-api.comments_get(function(err, comments, res){
+api.comments.get(function(err, comments, res){
 }); 
 
 //with out data 2
-var request = api.comments_get(false);
+var request = api.comments.get(false);
 var promise = request.end(); // similar to superagent's api
 
 //or callback
@@ -96,14 +119,14 @@ request.end(function(err, comments, res){
 
 
 //with data 1
-var promise = api.comments_get({count:3}).then(function(comments, res){});
+var promise = api.comments.get({count:3}).then(function(comments, res){});
 
 //or callback
-api.comments_get({count:3},function(err, comments, res){
+api.comments.get({count:3},function(err, comments, res){
 });
 
 //with data 2
-var request = api.comments_get({count:3}, false);
+var request = api.comments.get({count:3}, false);
 var promise = request.end(); // similar to superagent's api
 
 //or callback

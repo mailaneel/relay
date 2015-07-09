@@ -8,8 +8,8 @@ export default class Relay extends EventEmitter {
      * Example Schema:
      *
      * {
-     *  'comments': {
-     *        'create' : {
+     *  comments: {
+     *        create : {
      *           path: '/comments',
      *           method: 'POST', //optional defaults to GET
      *           parse: function(res){}, optional callback:  function signature: function(res){return res;}
@@ -18,7 +18,7 @@ export default class Relay extends EventEmitter {
      * }
      *
      * above schema will be available as method
-     * relay.api.comments_get()
+     * relay.api.comments.create()
      *
      * @param schema
      * @param config
@@ -88,7 +88,7 @@ export default class Relay extends EventEmitter {
         this.middlewares = [Relay.parser, Relay.promisify];
 
         // this can be used as extension point to add cache wrapper etc.,
-        this._api = {};
+        this.api = {};
 
         this._bindToEvents();
     }
@@ -96,27 +96,6 @@ export default class Relay extends EventEmitter {
     use(fn){
        this.middlewares.push(fn);
        return this;
-    }
-
-    /**
-     * if no params are given will return api object
-     *
-     * @param {string} [resource] can be resource or name of method i.e resource_method
-     * @param {string} [method]
-     */
-    api(resource, method) {
-        if (resource && this._api[resource]) {
-            if (method && this._api[resource][method]) {
-                return this._api[resource][method];
-            }
-            return this._api[resource];
-        }
-
-        return this._api;
-    }
-
-    methods(resource, method){
-        return this.api(resource, method);
     }
 
     _requestStarted() {
@@ -165,7 +144,6 @@ export default class Relay extends EventEmitter {
     /**
      *
      * @param {object} options
-     * @param {string} [options.name=resourceName_methodName] This will identify resource uniquely ex: comments_get
      * @param {string} options.resourceName this is the resource ex: comments
      * @param {string} options.methodName this is the method name ex: create
      * @param {string} [options.method=GET] this is request method ex: 'GET','PUT', 'POST' etc.,
@@ -191,19 +169,13 @@ export default class Relay extends EventEmitter {
             throw new Error('path is required');
         }
 
-        if (!options.name) {
-            options.name = [options.resourceName, options.methodName].join('_');
-        }
-
-        options.name = options.name.toLocaleLowerCase();
-
         if (!options.method) {
             options.method = 'GET';
         }
 
 
-        this._api[options.resourceName] = this._api[options.resourceName] || {};
-        this._api[options.resourceName][options.methodName] = this._api[options.name] = this._generateRequestMethod(_.clone(options));
+        this.api[options.resourceName] = this.api[options.resourceName] || {};
+        this.api[options.resourceName][options.methodName] = this._generateRequestMethod(_.clone(options));
 
         return this;
     }
@@ -252,28 +224,28 @@ export default class Relay extends EventEmitter {
          *  false as first or second parameter to method will return request for modification, it allows us to modify request.
          *  When ready to send request call end()  with or without callback.. end() will always return promise
          *
-         *  var request = api.comments_get({count:1}, false);
+         *  var request = api.comments.get({count:1}, false);
          *  request.query({session_id: 1234});
          *  var promise = request.end();
          *  promise.then(function(res){});
          *
          *  if there is no need to modify request
          *
-         *  var promise = api.comments_get({count:1});
+         *  var promise = api.comments.get({count:1});
          *  promise.then(function(res){});
          *
          *  or if there are no query params
          *
-         *  var promise = api.comments_get();
+         *  var promise = api.comments.get();
          *  promise.then(function(res){});
          *
          *  or if you like node like callbacks
          *
-         *  api.comments_get({count:1}, function(err, res){});
+         *  api.comments.get({count:1}, function(err, res){});
          *
          *  or
          *
-         *  api.comments_get({count:1}, false).end(function(err, res){});
+         *  api.comments.get({count:1}, false).end(function(err, res){});
          *
          * data is optional, so you can pass callback or false as first parameter as well if needed.
          * @param {object|boolean|function} [data] data to sent to server
