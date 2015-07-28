@@ -50,10 +50,10 @@ export default class Relay extends EventEmitter {
             cb = cb || _.noop;
             return wrappedEnd.call(request, function (err, res) {
                 if (!err && res.ok) {
-                    if (request.options.parse && _.isFunction(request.options.parse)) {
+                    if (request.options.parse && _.isFunction(request.options.parse) && res.body && !res.body.__parsed) {
                         res.body = request.options.parse(res.body);
                         if (res.body) {
-                            res.body.__parsed = true
+                            res.body.__parsed = true;
                         }
                     }
                 }
