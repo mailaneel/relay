@@ -52,6 +52,9 @@ export default class Relay extends EventEmitter {
                 if (!err && res.ok) {
                     if (request.options.parse && _.isFunction(request.options.parse)) {
                         res.body = request.options.parse(res.body);
+                        if (res.body) {
+                            res.body.__parsed = true
+                        }
                     }
                 }
 
@@ -92,10 +95,10 @@ export default class Relay extends EventEmitter {
 
         this._bindToEvents();
     }
-    
-    use(fn){
-       this.middlewares.push(fn);
-       return this;
+
+    use(fn) {
+        this.middlewares.push(fn);
+        return this;
     }
 
     _requestStarted() {
@@ -288,8 +291,8 @@ export default class Relay extends EventEmitter {
             relay.emit('beforeRequest', request);
 
             //add middlewares
-            _.each(relay.middlewares, function(middleware){
-               request.use(middleware); 
+            _.each(relay.middlewares, function (middleware) {
+                request.use(middleware);
             });
 
             request.end = _.wrap(request.end, function (wrappedEnd, cb) {
