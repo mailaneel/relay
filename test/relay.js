@@ -3,7 +3,7 @@ var nock = require('nock');
 var sinon = require('sinon');
 var assert = require('chai').assert;
 var superagent = require('superagent');
-
+var isPromise = require('is-promise');
 
 var schema = {
     comments: {
@@ -112,9 +112,8 @@ describe('Relay', function () {
             var relay = new Relay(config);
             var method = getMethod();
             relay._addMethod(method);
-
-            assert.instanceOf(relay.api.comments.get(), Promise);
-            assert.instanceOf(relay.api.comments.get({}), Promise);
+            assert.isTrue(isPromise(relay.api.comments.get()));
+            assert.isTrue(isPromise(relay.api.comments.get({})));
 
         });
 
@@ -178,7 +177,7 @@ describe('Relay', function () {
                 done()
             });
 
-            assert.instanceOf(relay.api.comments.get(), Promise);
+            relay.api.comments.get();
             nock.cleanAll();
         });
     });
@@ -200,7 +199,7 @@ describe('Relay', function () {
                 done()
             });
 
-            assert.instanceOf(relay.api.comments.get(), Promise);
+            relay.api.comments.get();
             nock.cleanAll();
         });
     });
