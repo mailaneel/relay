@@ -61,7 +61,7 @@ export default class Relay extends EventEmitter {
         if (!err && res.ok) {
           if (request.options.parse && _.isFunction(request.options.parse) && res.body && !res.body.__parsed) {
             res.body = request.options.parse(res.body);
-            if (res.body) {
+            if (res.body && _.isObject(res.body)) {
               res.body.__parsed = true;
             }
           }
@@ -198,12 +198,9 @@ export default class Relay extends EventEmitter {
 
     var matches = path.split('/:');
     _.each(params, function (val, key) {
-      path = path.replace('/:' + key, '/' + val);
-    });
-
-    _.each(matches, function (val) {
-      if (_.indexOf(_.keys(params), val) !== -1) {
-        delete params[val];
+      if (path.indexOf(':' + key) !== -1) {
+        path = path.replace('/:' + key, '/' + val);
+        delete params[key];
       }
     });
 
