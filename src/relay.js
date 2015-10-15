@@ -213,7 +213,7 @@ export default class Relay extends EventEmitter {
 
   _sanitizeQueryParams(params) {
     _.each(params, function (val, key) {
-      if (_.isEmpty(val) && !_.isNumber(val)) {
+      if (!val) {
         delete params[key];
       }
     });
